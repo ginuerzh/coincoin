@@ -1,0 +1,100 @@
+<!--
+   option.html
+   
+   Copyright 2013 Gerry <gerry@gerry-ubuntu-tcl>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+   MA 02110-1301, USA.
+   
+   
+-->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>OKCoin Options</title>
+
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="css/bootstrap-theme.min.css">
+
+<script src="js/jquery.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/options.js"></script>
+
+<style>
+    body {
+        margin-top: 100px;
+    }
+    
+    .title {
+        padding: 20px;
+    }
+    
+    #options {
+        background-color: #99CCFF;
+        border-radius: 10px;
+    }
+    #options .row {
+        margin-bottom: 10px
+    }
+    
+    .notify-price {
+        width: 50px;
+    }
+</style>
+
+</head>
+
+<body>
+    
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3" id="options">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-4 h3 title">OKCoin行情选项</div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">默认显示:</div>
+                <div class="col-md-2">
+                    <input class="coin-type" id="coin-type-btc" type="radio" name="coin" value="btc"/> BTC
+                </div>
+                <div class="col-md-2">
+                    <input class="coin-type" id="coin-type-ltc" type="radio" name="coin" value="ltc"/> LTC
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">更新间隔(min):</div>
+                <div class="col-md-4">
+                    <input type="text" id="interval" name="interval" placeholder="1"/>
+                </div>
+                <div class="col-md4">*最小值为1分钟</div>
+            </div>
+        
+            <div class="row">
+                <div class="col-md-4">提醒我:</div>
+                <div class="col-md-8">
+                    当价格低于<input class="notify-price" id="low-price" type="text" name="low_price" placeholder="0"/>
+                    或高于<input class="notify-price" id="high-price" type="text" name="high_price" placeholder="0"/>时提醒我
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+
+</html>

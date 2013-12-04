@@ -1,58 +1,127 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
 <title>OKCoin</title>
 
-<link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="css/bootstrap-theme.min.css">
 
-<script src="js/jquery-2.0.3.min.js"></script>
+<script src="js/jquery.js"></script>
 <script src="js/bootstrap.min.js"></script>
 
 <script src="js/popup.js"></script>
 
 <style>
 	body {
-		width: 480px;
+		width: 650px;
+	}
+	
+	.last {
+		color: red;
+		font-weight: bold;
+	}
+	
+	table.depth {
+		width: 170px;
+	}
+	
+	table.trades {
+		width: 250px;
+	}
+	
+	img.sign {
+		width: 20px;
+		height: 20px;
 	}
 </style>
 
 
 </head>
 <body>
-	<table class="table">
-		<thead>
-			<tr>
-				<th>Coin</th>
-				<th>最新价格</th>
-				<th>买一价</th>
-				<th>卖一价</th>
-				<th>最高价</th>
-				<th>最低价</th>
-				<th>成交量</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr id="btc-ticker">
-				<td>BTC</td>
-				<td class="deal">298.1</td>
-				<td>298.1</td>
-				<td>298.12</td>
-				<td>380</td>
-				<td>275</td>
-				<td>2628321.40Ł</td>
-			</tr>
-			<tr id="ltc-ticker">
-				<td>LTC</td>
-				<td class="deal">298.1</td>
-				<td>298.1</td>
-				<td>298.12</td>
-				<td>380</td>
-				<td>275</td>
-				<td>2628321.40Ł</td>
-			</tr>
-		</tbody>
-	</table>
-
+	<div class="container">
+		<div class="row">
+			<div class="col-md-1">
+				<table class="table table-hover ticker">
+					<thead>
+						<tr>
+							<th>Coin</th>
+							<th>最新价格</th>
+							<th>买一价</th>
+							<th>卖一价</th>
+							<th>最高价</th>
+							<th>最低价</th>
+							<th>成交量</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr id="btc-ticker">
+							<td><img class="sign" src="images/btc.png"/></td>
+							<td><span class="last h4">298.1</span></td>
+							<td class="buy">298.1</td>
+							<td class="sell">298.12</td>
+							<td class="high">380</td>
+							<td class="low">275</td>
+							<td><span class="vol">2628321.40</span>฿</td>
+						</tr>
+						<tr id="ltc-ticker">
+							<td><img class="sign" src="images/ltc.png"/></td>
+							<td><span class="last h4">298.1</span></td>
+							<td class="buy">298.1</td>
+							<td class="sell">298.12</td>
+							<td class="high">380</td>
+							<td class="low">275</td>
+							<td><span class="vol">2628321.40</span>Ł</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	
+		<div class="row">
+			<div class="col-md-4 pull-right">
+				<table class="table table-striped trades">
+					<thead>
+						<tr>
+							<th>成交时间</th>
+							<th>成交价</th>
+							<th>成交量</th>
+						</tr>
+					</thead>
+					<tbody id="trades">
+						<tr>
+							<td>12:56:12</td>
+							<td>￥6524</td>
+							<td>฿8.853</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="col-md-4  pull-left">
+				<table class="table table-striped depth">
+					<thead>
+						<tr>
+							<th>买入价</th>
+							<th>委单量</th>
+						</tr>
+					</thead>
+					<tbody id="depth-buy">
+					</tbody>
+				</table>
+			</div>
+			<div class="col-md-4">
+				<table class="table table-striped depth">
+					<thead>
+						<tr>
+							<th>卖出价</th>
+							<th>委单量</th>
+						</tr>
+					</thead>
+					<tbody id="depth-sell">
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
 </body>
 </html>
