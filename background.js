@@ -15,6 +15,7 @@ var okcoin_btc_ticker_key = "okcoin_btc_ticker"
 var okcoin_ltc_ticker_key = "okcoin_ltc_ticker"
 
 var options = {};
+options[coin_type_key] = type_btc;
 options[interval_key] = 1;
 
 
@@ -244,11 +245,11 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 		if (key == coin_type_key) {
 			var value;
 			if (storageChange.newValue == type_btc && options[okcoin_btc_ticker_key] != undefined) {
-				value = options[okcoin_btc_ticker_key].last
+				value = options[okcoin_btc_ticker_key].last;
 			}
 			
 			if (storageChange.newValue == type_ltc && options[okcoin_ltc_ticker_key] != undefined) {
-				value = options[okcoin_ltc_ticker_key].last
+				value = options[okcoin_ltc_ticker_key].last;
 			}
 			chrome.browserAction.setBadgeText({text:value});
 			
