@@ -3,42 +3,122 @@ var oldChromeVersion = !chrome.runtime;
 var requestTimerId;
 var requestTimeout = 1000 * 15;  // seconds
 
-var type_btc = "btc";
-var type_ltc = "ltc"
+var markets = {};
+var m_okcoin = new Market(market_okcoin);
+m_okcoin.addCoin(new Coin(coin_btc));	// add bitcoin
+m_okcoin.addCoin(new Coin(coin_ltc));	// add litecoin
+m_okcoin.addAPI("base", "http://www.okcoin.com/api");
+m_okcoin.addAPI("ticker_btc", "/ticker.do");
+m_okcoin.addAPI("ticker_ltc", "/ticker.do?symbol=ltc_cny");
+m_okcoin.addAPI("depth_btc", "/depth.do");
+m_okcoin.addAPI("depth_ltc", "/depth.do?symbol=ltc_cny");
+m_okcoin.addAPI("trades_btc", "/trades.do");
+m_okcoin.addAPI("trades_ltc", "/trades.do?symbol=ltc_cny");
 
-var coin_type_key = "show_coin_type";
-var interval_key = "update_interval";
-var price_low_key = "notify_low_price";
-var price_high_key = "notify_high_price";
-
-var okcoin_btc_ticker_key = "okcoin_btc_ticker"
-var okcoin_ltc_ticker_key = "okcoin_ltc_ticker"
-
-var options = {};
-var options_loaded = false;
-options[coin_type_key] = type_btc;
-options[interval_key] = 1;
-options[price_low_key] = 0;
-options[price_high_key] = 0;
-options[okcoin_btc_ticker_key] = undefined;
-options[okcoin_ltc_ticker_key] = undefined;
+markets[m_okcoin.name] = m_okcoin;	// add okcoin support
+console.log(m_okcoin);
 
 
-function scheduleRequest() {
-	delay = options[interval_key];
-	console.log('scheduleRequest delay', delay);
+function save(key, value) {
+	var o = {};
 	
-	if (oldChromeVersion) {
-		if (requestTimerId) {
-			window.clearTimeout(requestTimerId);
+	o[key] = value;
+	chrome.storage.local.set(o, function(){
+		console.log(key, "saved!");
+	});
+}
+
+function setIcon(oldValue, newValue) {
+		oldValue = parseFloat(oldValue);
+		newValue = parseFloat(newValue);
+		console.log("setIcon", options.market, options.coin_type, oldValue, resp.ticker.last);
+		
+		if (oldValue < newValue) {
+			chrome.browserAction.setBadgeBackgroundColor({color:"#00AA00"});
+		} else if (oldValue > newValue) {
+			chrome.browserAction.setBadgeBackgroundColor({color:"#AA0000"});
+		} else {
+			chrome.browserAction.setBadgeBackgroundColor({color:"#0000AA"});
 		}
-		requestTimerId = window.setTimeout(onAlarm, delay*60*1000);
-	} else {
-		console.log('Creating alarm');
-		// Use a repeating alarm so that it fires again if there was a problem
-		// setting the next alarm.
-		chrome.alarms.create('refresh', {periodInMinutes: delay});
-	}
+		chrome.browserAction.setBadgeText({text:newValue});
+		
+		//notify(newValue);
+}
+
+function getTicker(market, coinType) {
+	console.log("getTicker", market, coinType);
+	
+	var m = markets[market];
+	if (m == undefined) return;
+	
+	var coin = m.getCoin(coinType);
+	//console.log(coin);
+	if (coin == undefined) return;
+	
+	var url = m.getTickerUrl(coinType);
+	//console.log(url);
+	request(url, 
+		function(resp) {
+			
+			var oldValue = 0;
+			if (m.name == options.market && coin.type == options.coin_type) {
+				var t = coin.ticker;
+				if (t != undefined) oldValue = t.last;
+				setIcon(oldValue, resp.ticker.last);
+			}
+			
+			coin.setTicker(resp.ticker);
+			save(market, m);
+			console.log('get ticker', coinType, 'success!');
+		},
+		function() {
+			console.log('get ticker', coinType, "error");
+		}
+	);
+}
+
+function getDepth(market, coinType) {
+	console.log("getDepth", market, coinType);
+	
+	var m = markets[market];
+	if (m == undefined) return;
+	
+	var coin = m.getCoin(coinType);
+	if (coin == undefined) return;
+	
+	var url = m.getDepthUrl(coinType);
+	request(url, 
+		function(resp) {
+			coin.setDepth(resp);
+			save(market, m);
+			console.log('get depth', coinType, 'success!');
+		},
+		function() {
+			console.log('get depth', coinType, "error");
+		}
+	);
+}
+
+function getTrades(market, coinType) {
+	console.log("getTrades", market, coinType);
+	
+	var m = markets[market];
+	if (m == undefined) return;
+	
+	var coin = m.getCoin(coinType);
+	if (coin == undefined) return;
+	
+	var url = m.getTradesUrl(coinType);
+	request(url, 
+		function(resp) {
+			coin.setTrades(resp);
+			save(market, m);
+			console.log('get trades', coinType, 'success!');
+		},
+		function() {
+			console.log('get trades', coinType, "error");
+		}
+	);
 }
 
 function request(url, onSuccess, onError) {
@@ -92,71 +172,22 @@ function request(url, onSuccess, onError) {
 	}
 }
 
-function getTicker(type) {
-	var key = okcoin_btc_ticker_key;
-	var url = "http://www.okcoin.com/api/ticker.do";
-	
-	if (type == type_ltc) {
-		key = okcoin_ltc_ticker_key;
-		url += "?symbol=ltc_cny";
-	}
-	
-	request(url, 
-			function(resp) {
-				console.log('store', key, resp.ticker);
-				
-				var ticker = {};
-				ticker[key] = resp.ticker;
-				chrome.storage.local.set(ticker);
-			},
-			function() {
-				console.log(key, "error");
-			}
-		);
-}
 
-function getDepth(type) {
-	var key = "okcoin_btc_depth";
-	var url = "http://www.okcoin.com/api/depth.do";
+function scheduleRequest() {
+	delay = options.interval;
+	console.log('scheduleRequest delay', delay);
 	
-	if (type == type_ltc) {
-		key = "okcoin_ltc_depth";
-		url += "?symbol=ltc_cny";
-	}
-	
-	request(url, 
-		function(resp) {
-			console.log('store', key, resp);
-			var depth = {};
-			depth[key] = resp;
-			chrome.storage.local.set(depth);
-		},
-		function() {
-			console.log(key, "error");
+	if (oldChromeVersion) {
+		if (requestTimerId) {
+			window.clearTimeout(requestTimerId);
 		}
-	);
-}
-
-function getTrades(type) {
-	var key = "okcoin_btc_trades";
-	var url = "http://www.okcoin.com/api/trades.do";
-	
-	if (type == type_ltc) {
-		key = "okcoin_ltc_trades";
-		url += "?symbol=ltc_cny";
+		requestTimerId = window.setTimeout(onAlarm, delay*60*1000);
+	} else {
+		console.log('Creating alarm');
+		// Use a repeating alarm so that it fires again if there was a problem
+		// setting the next alarm.
+		chrome.alarms.create('refresh', {periodInMinutes: delay});
 	}
-	
-	request(url,
-		function(resp) {
-			console.log('store', key, resp);
-			var trades = {};
-			trades[key] = resp;
-			chrome.storage.local.set(trades);
-		},
-		function() {
-			console.log(key, "error");
-		}
-	);
 }
 
 function startRequest(params) {
@@ -165,18 +196,18 @@ function startRequest(params) {
 	if (params && params.scheduleRequest) scheduleRequest();
 	
 	// get okcoin btc ticker
-	getTicker(type_btc);
+	getTicker(market_okcoin, coin_btc);
 	// get okcoin ltc ticker
-	getTicker(type_ltc);
+	getTicker(market_okcoin, coin_ltc);
 	
 	// get okcoin btc market depth
-	getDepth(type_btc);
+	getDepth(market_okcoin, coin_btc);
 	// get okcoin ltc market depth
-	getDepth(type_ltc);
+	getDepth(market_okcoin, coin_ltc);
 	
 	// get trades
-	getTrades(type_btc);
-	getTrades(type_ltc)
+	getTrades(market_okcoin, coin_btc);
+	getTrades(market_okcoin, coin_ltc)
 }
 
 function onAlarm(alarm) {
@@ -202,15 +233,6 @@ function onWatchdog() {
 	});
 }
 
-function loadOptions() {
-	if (options_loaded) return;
-	
-	chrome.storage.local.get(options, function(items){
-		console.log("load options", items);
-		options = items;
-		options_loaded = true;
-	});
-}
 
 function onInit() {
 	console.log('onInit');
@@ -259,7 +281,6 @@ function notify(newValue) {
 }
 
 chrome.storage.onChanged.addListener(function(changes, namespace) {
-	console.log(changes)
 	for (key in changes) {
 		var storageChange = changes[key];
 		/*console.log('Storage key "%s" in namespace "%s" changed. ' +
@@ -268,26 +289,8 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
                 namespace,
                 storageChange.oldValue,
                 storageChange.newValue);*/
-        
-		options[key] = storageChange.newValue;
 		
-        if (key == okcoin_ltc_ticker_key && options[coin_type_key] == type_ltc ||
-			key == okcoin_btc_ticker_key && options[coin_type_key] == type_btc) {
-			var oldValue = parseFloat(storageChange.oldValue.last);
-			var newValue = parseFloat(storageChange.newValue.last);
-			if (oldValue < newValue) {
-				chrome.browserAction.setBadgeBackgroundColor({color:"#00AA00"});
-			} else if (oldValue > newValue) {
-				chrome.browserAction.setBadgeBackgroundColor({color:"#AA0000"});
-			} else {
-				chrome.browserAction.setBadgeBackgroundColor({color:"#0000AA"});
-			}
-			chrome.browserAction.setBadgeText({text:storageChange.newValue.last});
-			
-			notify(newValue);
-			
-		}
-		
+        /*
 		if (key == coin_type_key) {
 			var value;
 			if (storageChange.newValue == type_btc && options[okcoin_btc_ticker_key] != undefined) {
@@ -300,7 +303,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 			console.log("change to", storageChange.newValue, value);
 			chrome.browserAction.setBadgeText({text:value});
 		}
-		
+		*/
 	}
 });
 

@@ -24,7 +24,7 @@
 	},
 	
 	"background": {
-		"scripts": ["background.js"],
+		"scripts": ["js/market.js", "background.js"],
 		"persistent": false
 	},
 	
