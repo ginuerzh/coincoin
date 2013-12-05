@@ -202,20 +202,20 @@ function showDepth(type) {
 		for (var i = 0; i < 10; i++) {
 			var tr = $("<tr/>");
 			
-			var price = $("<td/>").text(cny_sign + asks[i][0]).css("color", "green");
+			var price = $("<td/>").text(cny_sign + bids[i][0]).css("color", "green");
 			tr.append(price);
-			tr.append($("<td/>").text(sign + asks[i][1]));
+			tr.append($("<td/>").text(sign + bids[i][1]));
 			buy.append(tr);
 		}
 			
 		var sell = $("tbody#depth-sell");
 		sell.empty();
-		for (var i = bids.length - 1; i >= bids.length - 10; i--) {
+		for (var i = asks.length - 1; i >= asks.length - 10; i--) {
 			var tr = $("<tr/>");
 			
-			var price = $("<td/>").text(cny_sign + bids[i][0]).css("color", "red");
+			var price = $("<td/>").text(cny_sign + asks[i][0]).css("color", "red");
 			tr.append(price);
-			tr.append($("<td/>").text(sign + bids[i][1]));
+			tr.append($("<td/>").text(sign + asks[i][1]));
 			sell.append(tr);
 		}
 	});

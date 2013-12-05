@@ -15,8 +15,13 @@ var okcoin_btc_ticker_key = "okcoin_btc_ticker"
 var okcoin_ltc_ticker_key = "okcoin_ltc_ticker"
 
 var options = {};
+var options_loaded = false;
 options[coin_type_key] = type_btc;
 options[interval_key] = 1;
+options[price_low_key] = 0;
+options[price_high_key] = 0;
+options[okcoin_btc_ticker_key] = undefined;
+options[okcoin_ltc_ticker_key] = undefined;
 
 
 function scheduleRequest() {
@@ -155,6 +160,8 @@ function getTrades(type) {
 }
 
 function startRequest(params) {
+	loadOptions();
+	
 	if (params && params.scheduleRequest) scheduleRequest();
 	
 	// get okcoin btc ticker
@@ -196,22 +203,59 @@ function onWatchdog() {
 }
 
 function loadOptions() {
-	var keys = {};
-	keys[coin_type_key] = "btc";
-	keys[interval_key] = 1;
-	keys[price_low_key] = 0;
-	keys[price_high_key] = 0;
+	if (options_loaded) return;
 	
-	chrome.storage.local.get(keys, function(items){
+	chrome.storage.local.get(options, function(items){
 		console.log("load options", items);
 		options = items;
+		options_loaded = true;
 	});
 }
 
 function onInit() {
 	console.log('onInit');
-	loadOptions();
 	startRequest({scheduleRequest:true});
+}
+
+function notify(newValue) {
+	var nid = "1";
+	var b = false;
+	
+	var opt = {
+		type: "basic"
+	};
+	
+	var low_price = parseFloat(options[price_low_key]);
+	var	high_price = parseFloat(options[price_high_key]);
+	
+	if (low_price > high_price) {
+		var tmp = low_price;
+		low_price = high_price;
+		high_price = tmp;
+	}
+	
+	if (options[coin_type_key] == type_btc) {
+		opt.title = "BTC价格提醒";
+		opt.iconUrl = "images/btc.png";
+	} else {
+		opt.title = "LTC价格提醒";
+		opt.iconUrl = "images/ltc.png";
+	}
+	if (newValue < low_price) {
+		opt.message = "当前价格" + newValue + "低于设定的价格" + low_price;
+		b = true;
+	}
+	if (newValue > high_price) {
+		opt.message = "当前价格" + newValue + "高于设定的价格" + high_price;
+		b = true;
+	}
+	
+	if (b) {
+		console.log(options[coin_type_key], "notification", newValue);
+		chrome.notifications.create(nid, opt, function(notificationId){
+			console.log(notificationId);
+		});
+	}
 }
 
 chrome.storage.onChanged.addListener(function(changes, namespace) {
@@ -238,8 +282,10 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 			} else {
 				chrome.browserAction.setBadgeBackgroundColor({color:"#0000AA"});
 			}
-			
 			chrome.browserAction.setBadgeText({text:storageChange.newValue.last});
+			
+			notify(newValue);
+			
 		}
 		
 		if (key == coin_type_key) {
@@ -251,8 +297,8 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 			if (storageChange.newValue == type_ltc && options[okcoin_ltc_ticker_key] != undefined) {
 				value = options[okcoin_ltc_ticker_key].last;
 			}
+			console.log("change to", storageChange.newValue, value);
 			chrome.browserAction.setBadgeText({text:value});
-			
 		}
 		
 	}

@@ -24,7 +24,7 @@ function loadOptions() {
 
 function saveCoinType() {
 	var type = $(this).attr("value");
-	//console.log(type);
+	console.log("new coin type", type);
 	var coinType = {};
 	coinType[coin_type_key] = type;
 	chrome.storage.local.set(coinType);
@@ -63,11 +63,26 @@ function saveHighPrice() {
 	chrome.storage.local.set(p);
 }
 
+function notifyTest() {
+	var nid = "1";
+	var opt = {
+		type: "basic",
+		title: "Primary Title",
+		message: "Primary message to display",
+		iconUrl: "images/okcoin.png"
+	};
+	chrome.notifications.create(nid, opt, function(notificationId){
+		console.log(notificationId);
+	});
+}
+
 $(function(){
 	loadOptions();
 	$(".coin-type").click(saveCoinType);
 	$("#interval").keyup(saveInterval);
 	$("#low-price").keyup(saveLowPrice);
 	$("#high-price").keyup(saveHighPrice);
+	
+	$("#btn-notify-test").click(notifyTest);
 
 });
