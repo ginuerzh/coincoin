@@ -2,14 +2,17 @@ var btc_sign = "฿";
 var ltc_sign = "Ł";
 var cny_sign = "￥";
 
-var market;
-var coin_display = coin_btc;
+var options = chrome.extension.getBackgroundPage().getOptions();
+var market = chrome.extension.getBackgroundPage().getMarket(options.market);
+
+var coin_display = options.coin_type;
+
 
 function showTicker(market, coinType) {
 	var tr;
-	
+
 	if (!market || !market.getCoin(coinType) || !market.getCoin(coinType).ticker) return;
-	
+
 	var ticker = market.getCoin(coinType).ticker;
 	//console.log(ticker);
 	if (coinType == coin_btc) {
@@ -31,22 +34,22 @@ function showDepth(market, coinType) {
 	if (coinType == coin_ltc) {
 		sign = ltc_sign;
 	}
-	
-	if (coin_display != coinType || 
+
+	if (coin_display != coinType ||
 		!market || !market.getCoin(coinType) || !market.getCoin(coinType).depth) return;
 	var depth = market.getCoin(coinType).depth;
 	//console.log(depth);
-	
+
 	var asks = depth['asks'];
 	var bids = depth['bids'];
 	//console.log(key, d.length);
-	
+
 	var buy = $("tbody#depth-buy");
 	buy.empty();
 	var sell = $("tbody#depth-sell");
 	sell.empty();
 
-	for (var i = 0; i < 10; i++) {
+	for (var i = 0; i < options.table_length; i++) {
 		var tr = $("<tr/>");
 
 		var price = $("<td/>").text(cny_sign + bids[i][0]).css("color", "green");
@@ -55,7 +58,7 @@ function showDepth(market, coinType) {
 		buy.append(tr);
 	}
 
-	for (var i = asks.length - 1; i >= asks.length - 10; i--) {
+	for (var i = asks.length - 1; i >= asks.length - options.table_length; i--) {
 		var tr = $("<tr/>");
 
 		var price = $("<td/>").text(cny_sign + asks[i][0]).css("color", "red");
@@ -71,15 +74,15 @@ function showTrades(market, coinType) {
 		sign = ltc_sign;
 	}
 
-	if (coin_display != coinType || 
+	if (coin_display != coinType ||
 		!market || !market.getCoin(coinType) || !market.getCoin(coinType).trades) return;
 	var trades = market.getCoin(coinType).trades;
-	if (trades.length < 10) return;
-	
+	if (trades.length < options.table_length) return;
+
 	var t = $("tbody#trades");
 	t.empty();
 
-	for (var i = trades.length - 1; i >= trades.length - 10; i--) {
+	for (var i = trades.length - 1; i >= trades.length - options.table_length; i--) {
 		var tr = $("<tr/>");
 
 		var date = new Date();
@@ -101,8 +104,10 @@ function showTrades(market, coinType) {
 function showMarket(market, coinType) {
 	showTicker(market, coin_btc);
 	showTicker(market, coin_ltc);
-	showDepth(market, coinType);
-	showTrades(market, coinType);
+	if (options.table_length > 0) {
+		showDepth(market, coinType);
+		showTrades(market, coinType);
+	}
 }
 
 function initMarkets(markets) {
@@ -121,19 +126,13 @@ $(document).ready(function(){
 	var btcTicker = $("tr#btc-ticker");
 	var ltcTicker = $("tr#ltc-ticker");
 
-	var bg = chrome.extension.getBackgroundPage();
-	if (bg == null) {
-		alert("error, background not running!");
-		return;
-	}
-	
-	var options = bg.getOptions();
-	market = bg.getMarket(market_okcoin);
 	console.log("background market", market);
 	console.log("background options", options)
-	
-	coin_display = options.coin_type;
-	
+
+	if (options.table_length == 0) {
+		$("#depth-trades").hide();
+	}
+
 	initMarkets(options.markets);
 	showMarket(market, coin_display);
 
@@ -142,7 +141,7 @@ $(document).ready(function(){
 		showMarket(market, coin_btc);
 	});
 	btcTicker.click(function(){
-		bg.getMarketInfo(options.market, coin_btc);
+		chrome.extension.getBackgroundPage().getMarketInfo(options.market, coin_btc);
 	});
 
 	ltcTicker.mouseover(function(){
@@ -150,9 +149,9 @@ $(document).ready(function(){
 		showMarket(market, coin_ltc);
 	});
 	ltcTicker.click(function(){
-		bg.getMarketInfo(options.market, coin_ltc);
+		chrome.extension.getBackgroundPage().getMarketInfo(options.market, coin_ltc);
 	});
-	
+
 	chrome.runtime.onMessage.addListener(
 	function(message, sender, sendResponse) {
 		//console.log(message);
@@ -166,7 +165,7 @@ $(document).ready(function(){
 			} else {
 				console.error("unknown info", message.info);
 			}
-			
+
 			//showMarket(market, message.coin);
 		  //sendResponse({farewell: "goodbye"});
 		}
