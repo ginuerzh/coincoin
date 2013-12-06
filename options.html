@@ -25,14 +25,17 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
-<title>OKCoin Options</title>
+<title>CoinCoin Options</title>
 
 <link rel="stylesheet" href="css/bootstrap.min.css">
 <link rel="stylesheet" href="css/bootstrap-theme.min.css">
 
 <script src="js/jquery.js"></script>
 <script src="js/bootstrap.min.js"></script>
+
+<script src="js/utils.js"></script>
 <script src="js/options.js"></script>
+<script src="js/options_web.js"></script>
 
 <style>
     body {
@@ -54,6 +57,7 @@
     .notify-price {
         width: 50px;
     }
+    
 </style>
 
 </head>
@@ -64,7 +68,43 @@
     <div class="row">
         <div class="col-md-6 col-md-offset-3" id="options">
             <div class="row">
-                <div class="col-md-6 col-md-offset-4 h3 title">OKCoin行情选项</div>
+                <div class="col-md-6 col-md-offset-4 h3 title">CoinCoin Options</div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">交易市场:</div>
+                <div class="col-md-8">
+                    <table class="table table-market">
+                        <thead>
+                            <tr>
+                                <th>名称</th>
+                                <th>显示</th>
+                                <th>设为默认</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><a href="https://www.okcoin.com">OKCoin</a></td>
+                                <td><input type="checkbox" class="markets" value="okcoin"></td>
+                                <td><input type="radio" class="default" name="default" value="okcoin"></td>
+                            </tr>
+                            <tr>
+                                <td><a href="https://www.btcchina.com">BTCChina</a></td>
+                                <td><input type="checkbox" class="markets" value="btcchina"></td>
+                                <td><input type="radio" class="default" name="default" value="btcchina"></td>
+                            </tr>
+                            <tr>
+                                <td><a href="https://www.mtgox.com">mt.gox</a></td>
+                                <td><input type="checkbox" class="markets" value="mtgox"></td>
+                                <td><input type="radio" class="default" name="default" value="mtgox"></td>
+                            </tr>
+                            <tr>
+                                <td><a href="https://www.btc-e.com">BTC-E</a></td>
+                                <td><input type="checkbox" class="markets" value="btce"></td>
+                                <td><input type="radio" class="default" name="default" value="btce"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="row">
                 <div class="col-md-4">默认显示:</div>

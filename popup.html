@@ -2,15 +2,15 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
-<title>OKCoin</title>
-
-<link rel="stylesheet" href="css/bootstrap.min.css">
-<link rel="stylesheet" href="css/bootstrap-theme.min.css">
+<title>CoinCoin</title>
 
 <script src="js/jquery.js"></script>
 <script src="js/bootstrap.min.js"></script>
-<script src="js/market.js"></script>
+
+<script src="js/utils.js"></script>
 <script src="js/popup.js"></script>
+
+<link rel="stylesheet" href="css/bootstrap.min.css">
 
 <style>
 	body {
@@ -34,12 +34,25 @@
 		width: 20px;
 		height: 20px;
 	}
+	
+	.market-logo {
+		width: 16px;
+		height: 16px;
+	}
 </style>
 
 
 </head>
 <body>
 	<div class="container">
+		<div class="row">
+			<ul class="nav nav-pills">
+			  <li id="okcoin" class="markets"><a href="#" title="okcoin"><img src="images/okcoin.ico" class="market-logo" alt="OKCoin"> OKCoin</a></li>
+			  <li id="btcchina" class="markets"><a href="#" title="btcchina"><img src="images/btcchina.ico" class="market-logo" alt="BTCChina"> BTCChina</a></li>
+			  <li id="mtgox" class="markets"><a href="#" title="mtgox"><img src="images/mtgox.ico" class="market-logo" alt="mt.gox"> mt.gox</a></li>
+			  <li id="btce" class="markets"><a href="#" title="btce"><img src="images/btce.ico" class="market-logo" alt="btc-e"> btc-e</a></li>
+			</ul>
+		</div>
 		<div class="row">
 			<div class="col-md-1">
 				<table class="table table-hover ticker">
@@ -57,28 +70,28 @@
 					<tbody>
 						<tr id="btc-ticker">
 							<td><img class="sign" src="images/btc.png"/></td>
-							<td><span class="last h4">298.1</span></td>
-							<td class="buy">298.1</td>
-							<td class="sell">298.12</td>
-							<td class="high">380</td>
-							<td class="low">275</td>
-							<td><span class="vol">2628321.40</span>฿</td>
+							<td><span class="last h4">0</span></td>
+							<td class="buy">0</td>
+							<td class="sell">0</td>
+							<td class="high">0</td>
+							<td class="low">0</td>
+							<td><span class="vol">0</span>฿</td>
 						</tr>
 						<tr id="ltc-ticker">
 							<td><img class="sign" src="images/ltc.png"/></td>
-							<td><span class="last h4">298.1</span></td>
-							<td class="buy">298.1</td>
-							<td class="sell">298.12</td>
-							<td class="high">380</td>
-							<td class="low">275</td>
-							<td><span class="vol">2628321.40</span>Ł</td>
+							<td><span class="last h4">0</span></td>
+							<td class="buy">0</td>
+							<td class="sell">0</td>
+							<td class="high">0</td>
+							<td class="low">0</td>
+							<td><span class="vol">0</span>Ł</td>
 						</tr>
 					</tbody>
 				</table>
 			</div>
 		</div>
 
-		<div class="row">
+		<div class="row" id="depth-trades">
 			<div class="col-md-4 pull-right">
 				<table class="table table-striped trades">
 					<thead>
@@ -89,11 +102,6 @@
 						</tr>
 					</thead>
 					<tbody id="trades">
-						<tr>
-							<td>12:56:12</td>
-							<td>￥6524</td>
-							<td>฿8.853</td>
-						</tr>
 					</tbody>
 				</table>
 			</div>

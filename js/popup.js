@@ -2,17 +2,16 @@ var btc_sign = "฿";
 var ltc_sign = "Ł";
 var cny_sign = "￥";
 
+var market;
+var coin_display = coin_btc;
+
 function showTicker(market, coinType) {
 	var tr;
-	var m = g_markets[market];
-	if (m == undefined) return;
-	var coin = m.coins[coinType];
-	//console.log(coin);
-	if (coin == undefined) return;
-	var ticker = coin.ticker;
-	console.log(ticker);
-	if (ticker == undefined) return;
-
+	
+	if (!market || !market.getCoin(coinType) || !market.getCoin(coinType).ticker) return;
+	
+	var ticker = market.getCoin(coinType).ticker;
+	//console.log(ticker);
 	if (coinType == coin_btc) {
 		tr = $("tr#btc-ticker");
 	} else {
@@ -30,26 +29,22 @@ function showTicker(market, coinType) {
 function showDepth(market, coinType) {
 	var sign = btc_sign;
 	if (coinType == coin_ltc) {
-		sign = ltc_sign
+		sign = ltc_sign;
 	}
+	
+	if (coin_display != coinType || 
+		!market || !market.getCoin(coinType) || !market.getCoin(coinType).depth) return;
+	var depth = market.getCoin(coinType).depth;
+	//console.log(depth);
+	
+	var asks = depth['asks'];
+	var bids = depth['bids'];
+	//console.log(key, d.length);
+	
 	var buy = $("tbody#depth-buy");
 	buy.empty();
 	var sell = $("tbody#depth-sell");
 	sell.empty();
-
-	var m = g_markets[market];
-	if (m == undefined) return;
-	var coin = m.coins[coinType];
-	console.log(coin);
-	if (coin == undefined) return;
-	var depth = coin.depth;
-	console.log(depth);
-	if (depth == undefined) return;
-
-	var asks = depth['asks']
-	var bids = depth['bids']
-	//console.log(key, d.length);
-
 
 	for (var i = 0; i < 10; i++) {
 		var tr = $("<tr/>");
@@ -75,17 +70,14 @@ function showTrades(market, coinType) {
 	if (coinType == coin_ltc) {
 		sign = ltc_sign;
 	}
+
+	if (coin_display != coinType || 
+		!market || !market.getCoin(coinType) || !market.getCoin(coinType).trades) return;
+	var trades = market.getCoin(coinType).trades;
+	if (trades.length < 10) return;
+	
 	var t = $("tbody#trades");
 	t.empty();
-
-	var m = g_markets[market];
-	if (m == undefined) return;
-	var coin = m.coins[coinType];
-	if (coin == undefined) return;
-	var trades = coin.trades;
-	if (trades == undefined || trades.length == 0) return;
-	console.log(trades.length);
-
 
 	for (var i = trades.length - 1; i >= trades.length - 10; i--) {
 		var tr = $("<tr/>");
@@ -106,46 +98,78 @@ function showTrades(market, coinType) {
 	}
 }
 
-function refresh() {
+function showMarket(market, coinType) {
+	showTicker(market, coin_btc);
+	showTicker(market, coin_ltc);
+	showDepth(market, coinType);
+	showTrades(market, coinType);
+}
 
+function initMarkets(markets) {
+	var elems = $(".markets");
+	console.log(elems.length);
+	for (var i = 0; i < elems.length; i++) {
+		var id = $(elems[i]).attr("id");
+		console.log(id, markets[id]);
+		if (!markets[id]) {
+			$(elems[i]).hide();
+		}
+	}
 }
 
 $(document).ready(function(){
 	var btcTicker = $("tr#btc-ticker");
 	var ltcTicker = $("tr#ltc-ticker");
 
-	loadOptions(function(){
-		loadMarket(market_okcoin, function(){
-			showTicker(g_options.market, coin_btc);
-			showTicker(g_options.market, coin_ltc);
-			showDepth(g_options.market, g_options.coin_type);
-			showTrades(g_options.market, g_options.coin_type);
-		});
-	});
-
+	var bg = chrome.extension.getBackgroundPage();
+	if (bg == null) {
+		alert("error, background not running!");
+		return;
+	}
+	
+	var options = bg.getOptions();
+	market = bg.getMarket(market_okcoin);
+	console.log("background market", market);
+	console.log("background options", options)
+	
+	coin_display = options.coin_type;
+	
+	initMarkets(options.markets);
+	showMarket(market, coin_display);
 
 	btcTicker.mouseover(function(){
-		showTicker(g_options.market, coin_btc);
-		showTicker(g_options.market, coin_ltc);
-		showDepth(g_options.market, coin_btc);
-		showTrades(g_options.market, coin_btc);
+		coin_display = coin_btc;
+		showMarket(market, coin_btc);
 	});
 	btcTicker.click(function(){
-		getTicker(g_options.market, coin_btc, function(){showTicker(g_options.market, coin_btc);});
-		getDepth(g_options.market, coin_btc, function(){showDepth(g_options.market, coin_btc);});
-		getTrades(g_options.market, coin_btc, function(){showTrades(g_options.market, coin_btc);});
+		bg.getMarketInfo(options.market, coin_btc);
 	});
 
 	ltcTicker.mouseover(function(){
-		showTicker(g_options.market, coin_btc);
-		showTicker(g_options.market, coin_ltc);
-		showDepth(g_options.market, coin_ltc);
-		showTrades(g_options.market, coin_ltc);
+		coin_display = coin_ltc;
+		showMarket(market, coin_ltc);
 	});
 	ltcTicker.click(function(){
-		getTicker(g_options.market, coin_ltc, function(){showTicker(g_options.market, coin_ltc);});
-		getDepth(g_options.market, coin_ltc, function(){showDepth(g_options.market, coin_ltc);});
-		getTrades(g_options.market, coin_ltc, function(){showTrades(g_options.market, coin_ltc);});
+		bg.getMarketInfo(options.market, coin_ltc);
+	});
+	
+	chrome.runtime.onMessage.addListener(
+	function(message, sender, sendResponse) {
+		//console.log(message);
+		if (message.action == "update") {
+			if (message.info == "ticker") {
+				showTicker(market, message.coin);
+			} else if (message.info == "depth") {
+				showDepth(market, message.coin);
+			} else if (message.info == "trades") {
+				showTrades(market, message.coin);
+			} else {
+				console.error("unknown info", message.info);
+			}
+			
+			//showMarket(market, message.coin);
+		  //sendResponse({farewell: "goodbye"});
+		}
 	});
 });
 
