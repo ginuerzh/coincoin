@@ -5,6 +5,7 @@ var requestTimeout = 1000 * 15;  // seconds
 
 var g_options = new Options();
 var g_markets = {};
+var inited = false;
 
 var g_apis = {};
 g_apis[market_okcoin] = {
@@ -256,10 +257,12 @@ function onWatchdog() {
 
 
 function onInit() {
+	if (inited) return;
 	console.log('onInit');
 	loadOptions(function(){
 		startRequest({scheduleRequest:true});
 	});
+	inited = true;
 }
 
 function notify(newValue) {
@@ -358,10 +361,12 @@ if (oldChromeVersion) {
 if (chrome.runtime && chrome.runtime.onStartup) {
 	chrome.runtime.onStartup.addListener(function() {
 		console.log('Starting browser...');
+		onInit();
 	});
 } else {
 	chrome.windows.onCreated.addListener(function() {
 		console.log('Window created...');
+		onInit();
 	});
 }
 

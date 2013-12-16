@@ -39,6 +39,6 @@ function save(key, value) {
 
 	o[key] = value;
 	chrome.storage.local.set(o, function(){
-		console.log(key, "saved!");
+		console.log(key, value, "saved!");
 	});
 }
