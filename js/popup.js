@@ -91,9 +91,9 @@ function showTrades(market, coinType) {
 
 		var price = $("<td/>").text(cny_sign + trades[i].price)
 		if (trades[i].type == "buy") {
-			price.css("color", "green");
-		} else {
 			price.css("color", "red");
+		} else {
+			price.css("color", "green");
 		}
 		tr.append(price);
 		tr.append($("<td/>").text(sign + trades[i].amount));

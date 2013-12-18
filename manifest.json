@@ -3,7 +3,7 @@
 
 	"name": "CoinCoin",
 	"description": "bitcoin and litecoin price",
-	"version": "0.1",
+	"version": "0.2",
 	"author": "ginuerzh@gmail.com",
 
 	"options_page": "options.html",
